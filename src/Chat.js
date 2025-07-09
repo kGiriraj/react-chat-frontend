@@ -13,7 +13,9 @@ const Chat = () => {
   const [stompClient, setStompClient] = useState(null);
 
   useEffect(() => {
-    const socket = new SockJS("chat-application-production-a168.up.railway.app/chat"); // ✅ Change this
+    const socket = new SockJS("chat-application-production-a168.up.railway.app/chat"); 
+    // const socket = new SockJS("http://localhost:8080/chat");
+
     const client = new Client({
       webSocketFactory: () => socket,
       onConnect: () => {
