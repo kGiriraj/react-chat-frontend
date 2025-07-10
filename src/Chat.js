@@ -56,7 +56,7 @@ const socket = new SockJS("https://chatapplication-production-c187.up.railway.ap
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center">React Chat App</h2>
+      <h2 className="text-center">Chat App</h2>
 
       <div className="mb-3">
         <input
