@@ -14,7 +14,7 @@ const Chat = () => {
   const subscribedRef = useRef(false); // ✅ Correct way to track subscription
 
   useEffect(() => {
-    const socket = new SockJS("https://chatapplication-production-c187.up.railway.app");
+const socket = new SockJS("https://chatapplication-production-c187.up.railway.app/chat");
     const client = new Client({
       webSocketFactory: () => socket,
       reconnectDelay: 5000,
