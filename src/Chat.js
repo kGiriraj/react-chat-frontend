@@ -1,5 +1,5 @@
 // src/Chat.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -10,37 +10,43 @@ const Chat = () => {
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState([]);
 
-  const [stompClient, setStompClient] = useState(null);
+  const stompClientRef = useRef(null);
+  const subscribedRef = useRef(false); // ✅ Correct way to track subscription
 
   useEffect(() => {
-    const socket = new SockJS("chat-application-production-a168.up.railway.app/chat"); 
-    // const socket = new SockJS("http://localhost:8080/chat");
-
+    const socket = new SockJS("http://localhost:8080/chat");
     const client = new Client({
       webSocketFactory: () => socket,
+      reconnectDelay: 5000,
       onConnect: () => {
         setConnected(true);
-        client.subscribe("/topic/messages", (payload) => {
-          const msg = JSON.parse(payload.body);
-          setMessages((prev) => [...prev, msg]);
-        });
+
+        if (!subscribedRef.current) {
+          client.subscribe("/topic/messages", (payload) => {
+            const msg = JSON.parse(payload.body);
+            setMessages((prev) => [...prev, msg]);
+          });
+          subscribedRef.current = true; // ✅ Prevent future subscriptions
+        }
       },
     });
 
     client.activate();
-    setStompClient(client);
+    stompClientRef.current = client;
 
     return () => {
       if (client.connected) {
         client.deactivate();
       }
+      subscribedRef.current = false; // 🔁 Reset on cleanup
     };
-  }, []);
+  }, []); // ✅ run only once on mount
 
   const sendMessage = () => {
-    if (stompClient && stompClient.connected && sender && message) {
+    const client = stompClientRef.current;
+    if (client && client.connected && sender && message) {
       const chatMessage = { sender, content: message };
-      stompClient.publish({
+      client.publish({
         destination: "/app/sendMessage",
         body: JSON.stringify(chatMessage),
       });
